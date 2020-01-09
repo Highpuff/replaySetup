@@ -18,5 +18,23 @@ Either build yourself with included scripts or use the ready-2-go _adf_ located 
 
 > For Windows users, run: _buildWin.cmd_
 
-
-
+## Directory Structure ##
+```
+.
+|-- README.md
+|-- adf
+|-- base
+|   |-- c
+|   |-- extra
+|   |-- repo
+|   |   |-- c
+|   |   |-- devs
+|   |   |   |-- monitors
+|   |   |   `-- netinterfaces
+|   |   |-- libs
+|   |   `-- prefs
+|   `-- s
+`-- bin
+    |-- adftools
+    `-- xdftools
+```
