@@ -2,7 +2,7 @@
 
 Provides a simple setup solution for FPGA Arcade Replay R1 including
 * RTG Automatic Setup
-* Network installation
+* Network installation (RoadShow initially)
 
 ## Instructions ##
 
