@@ -12,7 +12,7 @@ Either build yourself with included scripts or use the ready-2-go _replaySetup.a
 
 ### Mac ###
 
-> For Mac users, run: _buildMac.sh_
+> For Mac users, run: _buildMac.sh_ _coming soon_
 
 ### Windows ###
 
