@@ -38,7 +38,7 @@
 (set #nicFileBSD	"bsdsocket.library")
 (set #cmpVersBSD	262454)
 
-(set #instDone		1)
+(set #instDone		0)
 (set #fpgaReboot	"c/Reboot")
 
 (set #FindNIC		"c/FindBoard 5060 16")
