@@ -1,0 +1,393 @@
+;
+;	Script to setup FPGA Arcade Replay
+;
+;	Author: highpuff / Struts
+;	Date:	2020-01-12
+;	Reason:	SpotUp / UpRough
+
+(set #Name		"FPGA Arcade Replay Setup")
+
+;(set #srcPath		"TempInst/")
+(set #srcPath		"")
+
+(set #dstPath		"SYS:")
+;(set #dstPath		"SYS:newP96/")
+;(set #dstPath		"SYS:P96Inst/")
+
+(set #defPathDevs	"Devs")
+(set #DefPathMonitor	"Devs/Monitors")
+(set #DefPathPrefs	"Prefs")
+(set #DefPathPrefsP96	"Prefs/Env-Archive/Picasso96")
+(set #DefPathLibs	"Libs")
+(set #DefPathLibsP96	"Libs/Picasso96")
+(set #DefPathDatatype	"Classes/Datatypes")
+(set #DefPathNetIf	"Devs/NetInterfaces")
+
+(set #p96FileSettings	"Picasso96Settings")
+(set #p96FileMonitor	"Replay")
+(set #p96InfoMonitor	"Replay.info")
+(set #p96FileCard	"Replay.card")
+(set #p96FileRTG	"rtg.library")
+(set #p96FileLayers	"fastlayers.library")
+(set #p96FileEmulation	"emulation.library")
+(set #p96FileMode	"Picasso96Mode")
+(set #p96InfoMode	"Picasso96mode.info")
+(set #p96FileAPI	"Picasso96API.library")
+(set #p96FileDatatype	"picture.datatype")
+
+(set #nicFileNetIf	"ReplayEth")
+(set #nicInfoNetIf	"ReplayEth.info")
+(set #nicFileEthDev	"replayeth.device")
+
+(set #nicFileBSD	"bsdsocket.library")
+(set #cmpVersBSD	262454)
+
+(set #FindNIC		"c/FindBoard 5060 16")
+(set #FindRTG		"c/FindBoard 5060 20")
+
+(set #_foundNIC (run #FindNIC (safe)))
+(set #_foundRTG (run #FindRTG (safe)))
+
+;(set #_foundNIC	9999)	; Dev Debug (remove later)
+;(set #_foundRTG	9999)	; Dev Debug (remove Later)
+
+; ---------------------------------------------
+;	Language part
+; ---------------------------------------------
+
+(set #_foundLanguage 0)
+(until
+	(= #_foundLanguage 1)
+
+	(if
+		(= @language "english")
+		(
+			(set #_foundLanguage 1)
+
+			(set #txtMessage
+				(cat
+					"\nWelcome to the FPGA Arcade Replay\n\n>> SETUP <<\n\n"
+					"This will install the following by choice:\n\n"
+					"- FGPA Arcade Replay RTG\n"
+					"- FPGA Arcade Replay Network Interface Card\n\n"
+					"Please note that the latter\n"
+					"requires a Roadshow installation present\n\n"
+					">> highpuff / Struts - 2020 <<\n\n"
+				) ; cat
+			) ; set
+
+			(set #fpgaCardsFail
+				(cat
+					"\nThe installer could neither detect a\n"
+					"Replay RTG or Replay NIC card\n\n"
+					"Please check your hardware and try again\n"
+				) ; cat
+			) ; set
+
+			(set #fpgaCardsTop	"\n\nThe following cards were detected:\n")
+			(set #fpgaCardsBot	"\n\nClick 'Proceed' to start installation\n")
+			(set #fpgaCardRTG	"\nFPGA Replay RTG found!")
+			(set #fpgaCardNIC	"\nFPGA Replay NIC found!")
+
+			(set #txtYes		"Yes")
+			(set #txtNo		"No")
+
+			(set #txtAskRTG		"Install FGPA Replay RTG Card?")
+			(set #txtAskNIC 	"Install FGPA Replay NIC Card?")
+
+			(set #txtCopyLib	"Installing ")
+			(set #txtCopyLibHelp	"")
+			(set #txtCopyEnv	"Copying environment variables")
+
+			(set #textPreNIC
+				(cat
+					"\nImportant!\n\n"
+					"Please note that the NIC installation is dependent\n"
+					"of a pre-installed Roadshow TCP/IP stack.\n\n"
+					"If the latter is missing the NIC will not work\n\n"
+
+				) ; cat
+			) ; set
+
+			(set #textErrorNIC
+				(cat
+					">> ! Error ! <<\n\n"
+					"No valid version of Roadshow TCP/IP stack\n"
+					"can be found in standard paths\n\n"
+					"Please re-install Roadshow and try again\n"
+
+				) ; cat
+			) ; set
+
+			(set #txtThanks
+				(cat
+					"Thanks goes to:\n\n"
+					"The FPGA Arcade Replay master MikeJ\n"
+					"erique - For the great work\n"
+					"SpotUp - For being so damn stubborn\n\n"
+					"emoon, grandalf, hicks, Arno, BrunoSilva\n"
+					"chucky, dozer + all other dudes...\n\n"
+					"The creators of Picasso96\n\n"
+					"And of course all the peple helping out with the\n"
+					">> FPGA Arcade Replay <<\n"
+				) ; cat
+			) ; set
+		)
+	) ; if
+
+	(if
+		(= #_foundLanguage 0)
+		(
+			(set @language "english")
+		)
+	) ; if
+)
+
+; //-------------------------------------------
+;	Procedure port
+; -------------------------------------------//
+
+(procedure procPullVersion #__inVol #__inPath #__inFile
+	(set #__pathBeg	(tackon #__inVol #__inPath))
+	(set #__Temp	(tackon #__pathBeg #__inFile))
+	(set #__verResult 0)
+	;(message #__Temp)
+	(if
+		(exists #__Temp)
+			(
+				(set #__verResult (getversion #__Temp))
+			)
+	) ; if
+) ; procedure
+
+
+(procedure procGetVersions
+
+	(procPullVersion #srcPath #DefPathLibsP96 #p96FileRTG)
+	(set #CurVersRTG #__verResult)
+
+	(procPullVersion #srcPath #DefPathLibsP96 #p96FileLayers)
+	(set #CurVersLayers #__verResult)
+
+	(procPullVersion #srcPath #DefPathLibsP96 #p96FileEmulation)
+	(set #CurVersEmulation #__verResult)
+
+	(procPullVersion #srcPath #DefPathPrefs #p96FileMode)
+	(set #CurVersMode #__verResult)
+
+	(procPullVersion #srcPath #DefPathLibs #p96FileAPI)
+	(set #CurVersAPI #__verResult)
+
+	(procPullVersion #srcPath #DefPathDatatype #p96FileDatatype)
+	(set #CurVersDatatype #__verResult)
+
+	(procPullVersion #srcPath #DefPathLibsP96 #p96FileCard)
+	(set #CurVersCard #__verResult)
+
+	; ********************* Current Version ************************
+
+	(procPullVersion #dstPath #DefPathLibsP96 #p96FileRTG)
+	(set #NewVersRTG #__verResult)
+
+	(procPullVersion #dstPath #DefPathLibsP96 #p96FileLayers)
+	(set #NewVersLayers #__verResult)
+
+	(procPullVersion #dstPath #DefPathLibsP96 #p96FileEmulation)
+	(set #NewVersEmulation #__verResult)
+
+	(procPullVersion #dstPath #DefPathPrefs #p96FileMode)
+	(set #NewVersMode #__verResult)
+
+	(procPullVersion #dstPath #DefPathLibs #p96FileAPI)
+	(set #NewVersAPI #__verResult)
+
+	(procPullVersion #dstPath #DefPathDatatype #p96FileDatatype)
+	(set #NewVersDatatype #__verResult)
+
+	(procPullVersion #dstPath #DefPathLibsP96 #p96FileCard)
+	(set #NewVersCard #__verResult)
+
+	; ********************* Test Purpose Only ************************
+
+	(set #__VersionList
+		(cat
+			"Current Files" "\n\n"
+			"SrcPath " #srcPAth "- DstPath " #dstPath "\n\n"
+			#p96FileRTG " - " #CurVersRTG " vs. " #NewVersRTG "\n"
+			#p96FileLayers " - " #CurVersLayers " vs. " #NewVersLayers "\n"
+			#p96FileEmulation " - " #CurVersEmulation " vs. " #NewVersEmulation "\n"
+			#p96FileMode " - " #CurVersMode " vs. " #NewVersMode "\n"
+			#p96FileAPI " - " #CurVersAPI " vs. " #NewVersAPI "\n"
+			#p96FileFileDatatype " - " #CurVersFileDatatype " vs. " #NewVersFileDataType "\n"
+			#p96FileCard " - " #CurVersCard " vs. " #NewVersCard "\n"
+		) ; cat
+	) ; set
+
+	(message #__VersionList (all))
+)
+
+
+(procedure procDetectCards
+	(if
+		(= (+ #_foundRTG #_foundNIC) 0)
+		(
+			(exit #fpgaCardsFail)
+		)
+
+		(if
+			(> #_foundRTG 0)
+				(set #fpgaCards #fpgaCardRTG)
+		) ; if
+
+	) ; if
+	(if
+		(> #_foundNIC 0)
+			(set #fpgaCards
+				(cat
+				#fpgaCards #fpgaCardNIC
+				)
+			)
+	) ; if
+	(message (cat #fpgaCardsTop #fpgaCards #fpgaCardsBot))
+) ; procedure
+
+
+(procedure procInstallQuestion #__installCard #__installText
+	(if
+		(> #__installCard 0)
+
+			(set #__installChoice
+				(askchoice
+					(prompt  #__installText)
+					(help "")
+					(choices
+						#txtYes
+						#txtNo
+					)
+					(default 0)
+				) ; askchoice
+			) ; set
+	) ; if
+) ; procedure
+
+
+(procedure procDoLibCopy #__inFile #__inVol #__inPath #__inComplete
+	;(message (cat (tackon #__inPath #__inFile) " " (tackon #__inVol #__inPath)))
+	(copylib
+		(prompt (cat #txtCopyLib #__inFile))
+		(help #txtCopyLibHelp)
+		(source (tackon #__inPath #__inFile))
+		(dest (tackon #__inVol #__inPath))
+		(confirm 1)
+	) ; copylib
+	(complete #__ínComplete)
+) ; procedure
+
+
+(procedure procDoFileCopy #__inFile #__inVol #__inPath #inComplete
+	(copyfiles
+		(prompt (cat #txtCopyLib #__inFile))
+		(help #txtCopyLibHelp)
+		(source (tackon #__inPath #__inFile))
+		(dest (tackon #__inVol #__inPath))
+	) ; copyfiles
+	(complete #__inComplete)
+) ; procedure
+
+
+(procedure procInstallReplayRTG
+
+	(complete 0)
+
+	(procDoLibCopy #p96FileRTG #dstPath #DefPathLibsP96 10)		; Copy RTG.library
+	(procDoLibCopy #p96FileEmulation #dstPath #DefPathLibsP96 20)	; Copy emulation.library
+
+	(procDoLibCopy #p96FileLayers #dstPath #DefPathLibsP96 30)	; Copy fastlayuers.library
+
+	(procDoLibCopy #p96FileAPI #dstPath #DefPathLibs 40)		; Copy Picasso96API.library
+
+	(procDoLibCopy #p96FileCard #dstPath #DefPathLibsP96 50)	; Copy Replay.card + info
+
+	(procDoLibCopy #p96FileMonitor #dstPath #DefPathMonitor 60)	; Copy Replay
+	(procDoFileCopy #p96InfoMonitor #dstPath #DefPathMonitor 65)	; Copy Replay.info
+
+	(procDoLibCopy #p96FileMode #dstPath #DefPathPrefs 70)		; Copy Picasso96Mode
+	(procDoFileCopy #p96InfoMode #dstPath #DefPathPrefs 75)		; Copy Picasso96Mode.info
+
+	(procDoLibCopy #p96FileDatatype #dstPath #DefPathDatatype 80)	; Copy picture.datatype
+
+	(procDoLibCopy #p96FileSettings #dstPath #DefPathDevs 90)	; Copy Picasso96Settings
+
+	(copyfiles
+		(prompt #txtCopyEn)
+		(help #txtCopyLibHelp)
+		(source #defPathPrefsP96)
+		(dest (tackon #dstPath #defPathPrefsP96))
+		(all)
+	) ; copyfiles
+
+	(complete 100)
+
+) ; procedure
+
+
+(procedure procInstallReplayNIC
+
+	(set #__tmpPath		(tackon #dstPath (tackon #DefPathLibs #nicFileBSD)))
+	(if
+		(>= (getVersion #__tmpPath) #cmpVersBSD)
+			(
+				(complete 0)
+				(procDoLibCopy #nicFileNetIf #dstPath #DefPathNetIf 30)
+				(procDoFileCopy #nicInfoNetIf #dstPath #DefPathNetIf 60)	
+				(procDoLibCopy #nicFileEthDev #dstPath #DefPathDevs 90)		
+				(complete 100)
+			)
+			
+			(
+				(message #textErrorNIC (all))
+				(exit)
+			)
+	) ; if
+
+) ; procedure
+
+; -------------------------------------------
+;		Installation part
+; -------------------------------------------
+
+(message #txtMessage (all))
+(procDetectCards) ; Detect cards
+
+(if
+	(> #_foundRTG 0)
+		(
+			(procInstallQuestion #_foundRTG #txtAskRTG) ; Out = #__installChoice
+			(if
+				(= #__installChoice 0)
+				(
+					;(procGetVersions)
+					(procInstallReplayRTG)
+				)
+		)
+	) ; if
+) ; if
+
+
+(if
+	(> #_foundNIC 0)
+		(
+			(procInstallQuestion #_foundNIC #txtAskNIC) ; Out = #__installChoice
+
+			(if
+				(= #__installChoice 0)
+				(
+					(procInstallReplayNIC)
+		)		)
+	) ; if
+) ; if
+
+(message #txtThanks (all))
+(exit)
+
+; EOF FPGA Arcade Replay installation script for RTG and NIC
