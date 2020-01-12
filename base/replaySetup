@@ -3,16 +3,12 @@
 ;
 ;	Author: highpuff / Struts
 ;	Date:	2020-01-12
-;	Reason:	SpotUp / UpRough
+;	Reason:	Spot / UpRough
 
 (set #Name		"FPGA Arcade Replay Setup")
 
-;(set #srcPath		"TempInst/")
 (set #srcPath		"")
-
 (set #dstPath		"SYS:")
-;(set #dstPath		"SYS:newP96/")
-;(set #dstPath		"SYS:P96Inst/")
 
 (set #defPathDevs	"Devs")
 (set #DefPathMonitor	"Devs/Monitors")
@@ -41,6 +37,9 @@
 
 (set #nicFileBSD	"bsdsocket.library")
 (set #cmpVersBSD	262454)
+
+(set #instDone		1)
+(set #fpgaReboot	"c/Reboot")
 
 (set #FindNIC		"c/FindBoard 5060 16")
 (set #FindRTG		"c/FindBoard 5060 20")
@@ -119,12 +118,25 @@
 				) ; cat
 			) ; set
 
+			(set #txtReboot
+				(cat
+					">> Installation Ready <<\n\n"
+					"Reboot your FPGA Arcade Replay?\n(! recommended ! )\n"
+				) ; cat
+			) ; set
+
+			(set #txtRebootHelp
+				(cat
+					"" ""
+				);
+			) ; set
+
 			(set #txtThanks
 				(cat
 					"Thanks goes to:\n\n"
 					"The FPGA Arcade Replay master MikeJ\n"
 					"erique - For the great work\n"
-					"SpotUp - For being so damn stubborn\n\n"
+					"Spot - For being so damn stubborn\n\n"
 					"emoon, grandalf, hicks, Arno, BrunoSilva\n"
 					"chucky, dozer + all other dudes...\n\n"
 					"The creators of Picasso96\n\n"
@@ -278,9 +290,9 @@
 		(help #txtCopyLibHelp)
 		(source (tackon #__inPath #__inFile))
 		(dest (tackon #__inVol #__inPath))
-		(confirm 1)
+		;(confirm 1)
 	) ; copylib
-	(complete #__ínComplete)
+	(complete #__inComplete)
 ) ; procedure
 
 
@@ -316,7 +328,7 @@
 
 	(procDoLibCopy #p96FileDatatype #dstPath #DefPathDatatype 80)	; Copy picture.datatype
 
-	(procDoLibCopy #p96FileSettings #dstPath #DefPathDevs 90)	; Copy Picasso96Settings
+	(procDoFileCopy #p96FileSettings #dstPath #DefPathDevs 90)	; Copy Picasso96Settings
 
 	(copyfiles
 		(prompt #txtCopyEn)
@@ -325,9 +337,8 @@
 		(dest (tackon #dstPath #defPathPrefsP96))
 		(all)
 	) ; copyfiles
-
 	(complete 100)
-
+	(set #instDone	1)
 ) ; procedure
 
 
@@ -342,6 +353,7 @@
 				(procDoFileCopy #nicInfoNetIf #dstPath #DefPathNetIf 60)	
 				(procDoLibCopy #nicFileEthDev #dstPath #DefPathDevs 90)		
 				(complete 100)
+				(set #instDone 1)
 			)
 			
 			(
@@ -388,6 +400,25 @@
 ) ; if
 
 (message #txtThanks (all))
-(exit)
 
+(if
+	(= #instDone 1)
+	(
+		(if
+			(askbool
+				(prompt #txtReboot)
+				(help #txtRebootHelp)
+			) ; askbool
+			(
+				(run #fpgaReboot (safe))
+			)
+			(
+				(exit)
+			)
+		) ; if
+	)
+	(
+		(exit)
+	)
+) ; if
 ; EOF FPGA Arcade Replay installation script for RTG and NIC
