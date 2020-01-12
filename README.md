@@ -2,11 +2,11 @@
 
 Provides a simple setup solution for FPGA Arcade Replay R1 including
 * RTG Automatic Setup
-* Network installation (RoadShow initially)
+* Network installation (RoadShow installed mandatory)
 
 ## Instructions ##
 
-Either build yourself with included scripts or use the ready-2-go _adf_ located inside the /adf/ folder.
+Either build yourself with included scripts or use the ready-2-go _replaySetup.adf_ located inside the /adf/ folder.
 
 ## Build Yourself ##
 
@@ -21,20 +21,20 @@ Either build yourself with included scripts or use the ready-2-go _adf_ located 
 ## Directory Structure ##
 ```
 .
-|-- README.md
-|-- adf
-|-- base
-|   |-- c
-|   |-- extra
-|   |-- repo
-|   |   |-- c
-|   |   |-- devs
-|   |   |   |-- monitors
-|   |   |   `-- netinterfaces
-|   |   |-- libs
-|   |   `-- prefs
-|   `-- s
-`-- bin
-    |-- adftools
-    `-- xdftools
+├───adf
+├───base
+│   ├───c
+│   ├───classes
+│   │   └───datatypes
+│   ├───devs
+│   │   ├───monitors
+│   │   └───netinterfaces
+│   ├───libs
+│   │   └───picasso96
+│   ├───prefs
+│   │   └───env-archive
+│   │       └───picasso96
+│   └───s
+└───bin
+    └───adftools
 ```
