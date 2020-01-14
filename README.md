@@ -38,3 +38,9 @@ Either build yourself with included scripts or use the ready-2-go _replaySetup.a
 └───bin
     └───adftools
 ```
+
+## Planned updates ##
+
+* Better icons for both original WB, Glow Icons etc.
+* AHI install
+
